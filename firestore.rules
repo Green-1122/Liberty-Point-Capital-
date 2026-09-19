@@ -1,0 +1,191 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Default Deny Catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isUser(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'greendlyn@gmail.com' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    // Entity Validations
+    function isValidUser(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.name is string && data.name.size() <= 100 &&
+             data.email is string && data.email.size() <= 150 &&
+             data.role in ['user', 'admin'] &&
+             data.balance is number;
+    }
+
+    function isValidTrade(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.userId is string && data.userId.size() <= 128 &&
+             data.assetSymbol is string && data.assetSymbol.size() <= 32 &&
+             data.type in ['BUY', 'SELL'] &&
+             data.amount is number && data.amount > 0 &&
+             data.leverage is number && data.leverage >= 1 && data.leverage <= 100 &&
+             data.status in ['OPEN', 'WIN', 'LOSS', 'CLOSED'];
+    }
+
+    function isValidFundingRequest(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.userId is string && data.userId.size() <= 128 &&
+             data.type in ['DEPOSIT', 'WITHDRAWAL', 'TRANSFER'] &&
+             data.amount is number && data.amount > 0 &&
+             data.status in ['PENDING', 'APPROVED', 'REJECTED'];
+    }
+
+    function isValidCreditApplication(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.userId is string && data.userId.size() <= 128 &&
+             data.requestedAmount is number && data.requestedAmount > 0 &&
+             data.status in ['PENDING', 'APPROVED', 'REJECTED'];
+    }
+
+    function isValidTask(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.userId is string && data.userId.size() <= 128 &&
+             data.title is string && data.title.size() <= 160 &&
+             data.category in ['COMPLIANCE', 'TRADING', 'REWARD', 'SECURITY'] &&
+             data.status in ['TODO', 'IN_PROGRESS', 'COMPLETED'];
+    }
+
+    function isValidNotification(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.userId is string && data.userId.size() <= 128 &&
+             data.title is string && data.title.size() <= 120 &&
+             data.message is string && data.message.size() <= 500 &&
+             data.isRead is bool;
+    }
+
+    // Collection: Users
+    match /users/{userId} {
+      allow get: if isUser(userId) || isAdmin();
+      allow list: if isAdmin();
+      allow create: if isUser(userId) && isValidUser(incoming()) && incoming().role == 'user';
+      allow update: if (
+        isAdmin() && isValidUser(incoming())
+      ) || (
+        isUser(userId) &&
+        isValidUser(incoming()) &&
+        incoming().role == existing().role &&
+        incoming().balance == existing().balance &&
+        incoming().totalDeposit == existing().totalDeposit &&
+        incoming().totalWithdrawal == existing().totalWithdrawal &&
+        incoming().totalProfit == existing().totalProfit &&
+        incoming().totalBonus == existing().totalBonus &&
+        incoming().kycStatus == existing().kycStatus &&
+        incoming().isLocked == existing().isLocked
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Collection: Admins registry
+    match /admins/{adminId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // Collection: Trades
+    match /trades/{tradeId} {
+      allow get: if isSignedIn() && (existing().userId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn() &&
+                    isValidTrade(incoming()) &&
+                    incoming().userId == request.auth.uid &&
+                    incoming().status == 'OPEN';
+      allow update: if (
+        isAdmin() && isValidTrade(incoming())
+      ) || (
+        isSignedIn() &&
+        existing().userId == request.auth.uid &&
+        isValidTrade(incoming()) &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['status', 'closePrice', 'updatedAt'])
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Collection: Funding Requests
+    match /fundingRequests/{requestId} {
+      allow get: if isSignedIn() && (existing().userId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn() &&
+                    isValidFundingRequest(incoming()) &&
+                    incoming().userId == request.auth.uid &&
+                    incoming().status == 'PENDING';
+      allow update: if isAdmin() && isValidFundingRequest(incoming());
+      allow delete: if isAdmin();
+    }
+
+    // Collection: Credit Applications
+    match /creditApplications/{applicationId} {
+      allow get: if isSignedIn() && (existing().userId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn() &&
+                    isValidCreditApplication(incoming()) &&
+                    incoming().userId == request.auth.uid &&
+                    incoming().status == 'PENDING';
+      allow update: if isAdmin() && isValidCreditApplication(incoming());
+      allow delete: if isAdmin();
+    }
+
+    // Collection: Tasks
+    match /tasks/{taskId} {
+      allow get: if isSignedIn() && (existing().userId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn() &&
+                    isValidTask(incoming()) &&
+                    incoming().userId == request.auth.uid;
+      allow update: if isSignedIn() && (
+        isAdmin() ||
+        (existing().userId == request.auth.uid && isValidTask(incoming()))
+      );
+      allow delete: if isSignedIn() && (existing().userId == request.auth.uid || isAdmin());
+    }
+
+    // Collection: Notifications
+    match /notifications/{notificationId} {
+      allow get: if isSignedIn() && (existing().userId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn() && isValidNotification(incoming());
+      allow update: if isSignedIn() && (
+        isAdmin() ||
+        (existing().userId == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['isRead']))
+      );
+      allow delete: if isSignedIn() && (existing().userId == request.auth.uid || isAdmin());
+    }
+
+    // Collection: Market Settings
+    match /marketSettings/{settingsId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+  }
+}

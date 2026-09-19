@@ -1,0 +1,6 @@
+{
+  "name": "Liberty Point Capital",
+  "description": "Liberty Point Capital - Institutional Trading, Investment Portfolio, Retirement and Savings Pension, and Wealth Management Platform",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

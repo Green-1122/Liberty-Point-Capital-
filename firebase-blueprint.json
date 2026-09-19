@@ -1,0 +1,167 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Trader profile, financial balances, KYC state, and preferences",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 100 },
+        "email": { "type": "string", "maxLength": 150 },
+        "role": { "type": "string", "enum": ["user", "admin"] },
+        "accountNumber": { "type": "string", "maxLength": 64 },
+        "language": { "type": "string", "maxLength": 10 },
+        "avatar": { "type": "string", "maxLength": 500 },
+        "balance": { "type": "number" },
+        "totalProfit": { "type": "number" },
+        "totalDeposit": { "type": "number" },
+        "totalWithdrawal": { "type": "number" },
+        "totalBonus": { "type": "number" },
+        "signalStrength": { "type": "number" },
+        "kycStatus": { "type": "string", "enum": ["VERIFIED", "PENDING", "REJECTED"] },
+        "referralCode": { "type": "string", "maxLength": 50 },
+        "referralEarnings": { "type": "number" },
+        "isLocked": { "type": "boolean" },
+        "createdAt": { "type": "string", "maxLength": 64 },
+        "updatedAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "name", "email", "role", "balance"]
+    },
+    "Trade": {
+      "title": "Trade",
+      "description": "Quick trade and market execution order record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "assetSymbol": { "type": "string", "maxLength": 32 },
+        "type": { "type": "string", "enum": ["BUY", "SELL"] },
+        "amount": { "type": "number" },
+        "leverage": { "type": "number" },
+        "expirationTime": { "type": "string", "maxLength": 32 },
+        "entryPrice": { "type": "number" },
+        "closePrice": { "type": "number" },
+        "status": { "type": "string", "enum": ["OPEN", "WIN", "LOSS", "CLOSED"] },
+        "payoutPercentage": { "type": "number" },
+        "createdAt": { "type": "string", "maxLength": 64 },
+        "updatedAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "userId", "assetSymbol", "type", "amount", "leverage", "status"]
+    },
+    "FundingRequest": {
+      "title": "FundingRequest",
+      "description": "Deposit, withdrawal, and internal transfer transaction request",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "type": { "type": "string", "enum": ["DEPOSIT", "WITHDRAWAL", "TRANSFER"] },
+        "amount": { "type": "number" },
+        "currency": { "type": "string", "maxLength": 16 },
+        "method": { "type": "string", "maxLength": 64 },
+        "status": { "type": "string", "enum": ["PENDING", "APPROVED", "REJECTED"] },
+        "proofUrl": { "type": "string", "maxLength": 500 },
+        "walletAddress": { "type": "string", "maxLength": 128 },
+        "createdAt": { "type": "string", "maxLength": 64 },
+        "updatedAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "userId", "type", "amount", "status"]
+    },
+    "CreditApplication": {
+      "title": "CreditApplication",
+      "description": "Fast credit financing and loan application",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "requestedAmount": { "type": "number" },
+        "durationMonths": { "type": "number" },
+        "interestRate": { "type": "number" },
+        "collateralAsset": { "type": "string", "maxLength": 64 },
+        "status": { "type": "string", "enum": ["PENDING", "APPROVED", "REJECTED"] },
+        "purpose": { "type": "string", "maxLength": 200 },
+        "createdAt": { "type": "string", "maxLength": 64 },
+        "updatedAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "userId", "requestedAmount", "status"]
+    },
+    "Task": {
+      "title": "Task",
+      "description": "Trading compliance, portfolio action, or account task item",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "maxLength": 160 },
+        "description": { "type": "string", "maxLength": 500 },
+        "category": { "type": "string", "enum": ["COMPLIANCE", "TRADING", "REWARD", "SECURITY"] },
+        "status": { "type": "string", "enum": ["TODO", "IN_PROGRESS", "COMPLETED"] },
+        "priority": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH"] },
+        "dueDate": { "type": "string", "maxLength": 64 },
+        "reward": { "type": "number" },
+        "createdAt": { "type": "string", "maxLength": 64 },
+        "updatedAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "userId", "title", "status", "category"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "User notification alert",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "maxLength": 120 },
+        "message": { "type": "string", "maxLength": 500 },
+        "type": { "type": "string", "maxLength": 32 },
+        "isRead": { "type": "boolean" },
+        "createdAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "userId", "title", "message", "isRead"]
+    },
+    "MarketSettings": {
+      "title": "MarketSettings",
+      "description": "Admin controllable risk, leverage, and trade parameters",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "minTradeAmount": { "type": "number" },
+        "maxTradeAmount": { "type": "number" },
+        "winRateOverride": { "type": "number" },
+        "defaultLeverage": { "type": "number" },
+        "updatedAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "minTradeAmount", "maxTradeAmount"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User account, balances, KYC status and profile"
+    },
+    "/trades/{tradeId}": {
+      "schema": "Trade",
+      "description": "Order execution and trade records"
+    },
+    "/fundingRequests/{requestId}": {
+      "schema": "FundingRequest",
+      "description": "Deposit and withdrawal requests with proof"
+    },
+    "/creditApplications/{applicationId}": {
+      "schema": "CreditApplication",
+      "description": "Fast credit and loan financing applications"
+    },
+    "/tasks/{taskId}": {
+      "schema": "Task",
+      "description": "Account management and compliance task items"
+    },
+    "/notifications/{notificationId}": {
+      "schema": "Notification",
+      "description": "User alerts and system notifications"
+    },
+    "/marketSettings/{settingsId}": {
+      "schema": "MarketSettings",
+      "description": "Global trading configurations and risk parameters"
+    }
+  }
+}
