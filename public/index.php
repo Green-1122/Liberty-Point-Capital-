@@ -1,6 +1,11 @@
 <?php
 
-session_start();
+session_start([
+    'cookie_httponly' => true,
+    'cookie_samesite' => 'Lax',
+    'cookie_secure' => (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'),
+]);
+
 require_once __DIR__ . '/../config/app.php';
 require_once __DIR__ . '/../helpers/Env.php';
 require_once __DIR__ . '/../config/database.php';

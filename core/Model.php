@@ -2,7 +2,6 @@
 
 namespace App\Core;
 
-use App\Config\Database;
 use PDO;
 
 abstract class Model
@@ -12,5 +11,10 @@ abstract class Model
     public function __construct()
     {
         $this->db = Database::getInstance();
+    }
+
+    protected function id(int|string|null $value): int
+    {
+        return max(0, (int) $value);
     }
 }

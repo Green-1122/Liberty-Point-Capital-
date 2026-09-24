@@ -7,82 +7,42 @@ final class Router
     public static function dispatch(): void
     {
         $uri = $_SERVER['REQUEST_URI'] ?? '/';
-        $path = parse_url($uri, PHP_URL_PATH) ?: '/';
-        $path = trim($path, '/');
+        $path = trim((string) (parse_url($uri, PHP_URL_PATH) ?: '/'), '/');
+        $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
 
         if ($path === '' || $path === 'index.php') {
             $path = !empty($_SESSION['user']) ? 'dashboard' : 'login';
         }
 
         $segments = $path === '' ? [] : explode('/', $path);
-        $requestMethod = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
-
-        $controllerName = strtolower($segments[0] ?? 'auth');
-        $actionName = strtolower($segments[1] ?? 'index');
+        $resource = strtolower($segments[0] ?? 'auth');
+        $action = strtolower($segments[1] ?? 'index');
         $params = array_slice($segments, 2);
 
-        $controllerMap = [
-            'auth' => 'AuthController',
-            'dashboard' => 'DashboardController',
-            'accounts' => 'AccountController',
-            'transfer' => 'TransferController',
-            'cards' => 'CardsController',
-            'investments' => 'InvestmentsController',
-            'support' => 'SupportController',
-            'admin' => 'AdminController',
-            'logout' => 'AuthController',
-            'login' => 'AuthController',
-            'register' => 'AuthController',
+        $map = [
+            'auth' => 'AuthController', 'login' => 'AuthController', 'register' => 'AuthController', 'logout' => 'AuthController',
+            'dashboard' => 'DashboardController', 'accounts' => 'AccountController', 'transfer' => 'TransferController',
+            'cards' => 'CardsController', 'investments' => 'InvestmentsController', 'support' => 'SupportController',
+            'admin' => 'AdminController', 'pension' => 'PensionController',
         ];
 
-        $controllerClass = 'App\\Controllers\\' . ($controllerMap[$controllerName] ?? ucfirst($controllerName) . 'Controller');
+        $controllerClass = 'App\\Controllers\\' . ($map[$resource] ?? ucfirst($resource) . 'Controller');
 
-        if ($controllerName === 'logout') {
-            $actionName = 'logout';
-        }
+        if ($resource === 'login') $action = $method === 'POST' ? 'doLogin' : 'login';
+        if ($resource === 'register') $action = $method === 'POST' ? 'doRegister' : 'register';
+        if ($resource === 'logout') $action = 'logout';
+        if ($resource === 'dashboard' && count($segments) === 1) $action = 'index';
+        if ($resource === 'accounts' && count($segments) === 1) $action = 'index';
+        if ($resource === 'transfer' && count($segments) === 1) $action = 'index';
+        if ($resource === 'cards' && count($segments) === 1) $action = 'index';
+        if ($resource === 'investments' && count($segments) === 1) $action = 'index';
+        if ($resource === 'support' && count($segments) === 1) $action = 'index';
+        if ($resource === 'admin' && count($segments) === 1) $action = 'index';
+        if ($resource === 'pension' && count($segments) === 1) $action = 'index';
 
-        if ($controllerName === 'login' && $requestMethod === 'POST') {
-            $actionName = 'doLogin';
-        }
-
-        if ($controllerName === 'register' && $requestMethod === 'POST') {
-            $actionName = 'doRegister';
-        }
-
-        if ($controllerName === 'accounts' && $actionName === 'store' && $requestMethod === 'POST') {
-            $actionName = 'store';
-        }
-
-        if ($controllerName === 'transfer' && $actionName === 'store' && $requestMethod === 'POST') {
-            $actionName = 'store';
-        }
-
-        if ($controllerName === 'cards' && $actionName === 'store' && $requestMethod === 'POST') {
-            $actionName = 'store';
-        }
-
-        if ($controllerName === 'investments' && $actionName === 'store' && $requestMethod === 'POST') {
-            $actionName = 'store';
-        }
-
-        if ($controllerName === 'support' && $actionName === 'store' && $requestMethod === 'POST') {
-            $actionName = 'store';
-        }
-
-        if (!class_exists($controllerClass)) {
-            http_response_code(404);
-            echo 'Page not found.';
-            return;
-        }
-
+        if (!class_exists($controllerClass)) { http_response_code(404); echo 'Page not found.'; return; }
         $controller = new $controllerClass();
-
-        if (!method_exists($controller, $actionName)) {
-            http_response_code(404);
-            echo 'Action not found: ' . htmlspecialchars($actionName, ENT_QUOTES, 'UTF-8');
-            return;
-        }
-
-        $controller->{$actionName}(...$params);
+        if (!method_exists($controller, $action)) { http_response_code(404); echo 'Action not found.'; return; }
+        $controller->{$action}(...$params);
     }
 }
