@@ -9,23 +9,17 @@ final class Router
         $path = trim((string) (parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/'), '/');
         $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
         if ($path === '' || $path === 'index.php') $path = !empty($_SESSION['user']) ? 'dashboard' : 'login';
-
         $segments = $path === '' ? [] : explode('/', $path);
         $resource = strtolower($segments[0] ?? 'auth');
         $action = strtolower($segments[1] ?? 'index');
         $params = array_slice($segments, 2);
-        $map = [
-            'auth' => 'AuthController', 'login' => 'AuthController', 'register' => 'AuthController', 'logout' => 'AuthController',
-            'dashboard' => 'DashboardController', 'accounts' => 'AccountController', 'transfer' => 'TransferController',
-            'cards' => 'CardsController', 'investments' => 'InvestmentsController', 'support' => 'SupportController',
-            'admin' => 'AdminController', 'pension' => 'PensionController', 'trade' => 'TradeController', 'trading' => 'TradeController',
-        ];
+        $map = ['auth'=>'AuthController','login'=>'AuthController','register'=>'AuthController','logout'=>'AuthController','dashboard'=>'DashboardController','accounts'=>'AccountController','transfer'=>'TransferController','cards'=>'CardsController','investments'=>'InvestmentsController','support'=>'SupportController','admin'=>'AdminController','pension'=>'PensionController','trade'=>'TradeController','trading'=>'TradeController'];
         $controllerClass = 'App\\Controllers\\' . ($map[$resource] ?? ucfirst($resource) . 'Controller');
         if ($resource === 'login') $action = $method === 'POST' ? 'doLogin' : 'login';
         if ($resource === 'register') $action = $method === 'POST' ? 'doRegister' : 'register';
         if ($resource === 'logout') $action = 'logout';
+        if ($resource === 'admin' && $action === 'set-user-status') $action = 'setUserStatus';
         if (in_array($resource, ['dashboard','accounts','transfer','cards','investments','support','admin','pension','trade','trading'], true) && count($segments) === 1) $action = 'index';
-
         if (!class_exists($controllerClass)) { http_response_code(404); echo 'Page not found.'; return; }
         $controller = new $controllerClass();
         if (!method_exists($controller, $action)) { http_response_code(404); echo 'Action not found.'; return; }

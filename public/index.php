@@ -1,29 +1,15 @@
 <?php
-
-session_start([
-    'cookie_httponly' => true,
-    'cookie_samesite' => 'Lax',
-    'cookie_secure' => (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'),
-]);
-
+session_name(SESSION_NAME);
+session_set_cookie_params(['httponly' => true, 'samesite' => 'Lax', 'secure' => (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'), 'path' => '/']);
+session_start();
 require_once __DIR__ . '/../config/app.php';
 require_once __DIR__ . '/../helpers/Env.php';
 require_once __DIR__ . '/../config/database.php';
-
 spl_autoload_register(static function (string $class): void {
-    $prefix = 'App\\';
-    if (strncmp($class, $prefix, strlen($prefix)) !== 0) {
-        return;
-    }
-
-    $relative = substr($class, strlen($prefix));
-    $path = __DIR__ . '/../' . str_replace('\\', '/', $relative) . '.php';
-
-    if (file_exists($path)) {
-        require_once $path;
-    }
+    if (strncmp($class, 'App\\', 4) !== 0) return;
+    $path = __DIR__ . '/../' . str_replace('\\', '/', substr($class, 4)) . '.php';
+    if (is_file($path)) require_once $path;
 });
 
 use App\Core\Router;
-
 Router::dispatch();
