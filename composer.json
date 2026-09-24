@@ -1,0 +1,20 @@
+{
+  "name": "liberty-point-capital/platform",
+  "description": "Liberty Point Capital PHP fintech platform",
+  "type": "project",
+  "require": {
+    "php": ">=8.1",
+    "ext-pdo": "*",
+    "ext-pdo_mysql": "*",
+    "ext-json": "*",
+    "ext-mbstring": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": ""
+    }
+  },
+  "scripts": {
+    "lint": "find config controllers core helpers middleware models public -name '*.php' -print0 | xargs -0 -n1 php -l"
+  }
+}
