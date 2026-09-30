@@ -1,0 +1,14 @@
+/* Premium Liberty Point Capital refinements */
+:root { --bg:#07111f; --surface:rgba(17,31,49,.78); --line:rgba(154,190,220,.18); --accent:#7ce7d1; --accent2:#80cfff; --text:#edf7ff; --muted:#9bb0c4; }
+body { min-height:100vh; background:radial-gradient(circle at 15% 0%,#12304a 0,transparent 38%),linear-gradient(135deg,#06101d,#0b1b2c 48%,#07131b); color:var(--text); }
+.sidebar { backdrop-filter:blur(18px); box-shadow:12px 0 40px rgba(0,0,0,.14); }
+.panel,.dashboard-overview,.stat-card,.account-card { backdrop-filter:blur(18px); box-shadow:0 18px 50px rgba(0,0,0,.12); }
+button,.primary-button { transition:transform .18s ease,box-shadow .18s ease,filter .18s ease; }
+button:hover,.primary-button:hover { transform:translateY(-1px); filter:brightness(1.08); box-shadow:0 10px 28px rgba(104,221,183,.18); }
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible { outline:3px solid var(--accent2); outline-offset:3px; }
+select,textarea,.stacked-form input { padding:14px 16px; border-radius:12px; border:1px solid var(--line); background:rgba(4,13,23,.62); color:var(--text); }
+.table-wrap { overflow-x:auto; margin-top:20px; } table { width:100%; border-collapse:collapse; } th,td { padding:14px 12px; border-bottom:1px solid var(--line); text-align:left; } th { color:var(--muted); font-size:.78rem; text-transform:uppercase; letter-spacing:.08em; }
+.alert-success { background:rgba(117,243,196,.12); border:1px solid rgba(117,243,196,.26); color:#bfffea; } .alert-warning { background:rgba(255,204,112,.12); border:1px solid rgba(255,204,112,.28); color:#ffe2a9; }
+.strategy-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin:20px 0; } .strategy-chip { padding:16px; border:1px solid var(--line); border-radius:16px; background:rgba(255,255,255,.035); } .strategy-chip strong,.strategy-chip small { display:block; } .strategy-chip small { color:var(--muted); margin-top:6px; }
+.narrow-panel { max-width:760px; margin:auto; } .two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; } .inline-form { display:flex; gap:8px; margin-top:16px; } .inline-form input { min-width:0; flex:1; }
+@media (max-width:860px) { .two-col,.content-split { grid-template-columns:1fr; } .topbar { align-items:flex-start; gap:16px; flex-direction:column; } .main-content { padding:18px; } }
